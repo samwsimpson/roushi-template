@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env*.local
+.env.development
+.env.production
+!.env.example
+
+# Auth.js
+.auth/
+
+# Vercel
+.vercel/
+
+# Drizzle
+drizzle/meta/
+drizzle/_journal.json
+drizzle/_meta.json
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+*.swp
+*.swo
+.cursor/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test artifacts
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# Roushi-specific
+# (Markdown content in content/ IS committed — it's the source of truth)
+.roushi-cache/
+*.brain.bak
+
+.vercel
