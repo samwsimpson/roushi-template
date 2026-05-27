@@ -9,7 +9,7 @@ import { routes, type VercelConfig } from "@vercel/config/v1";
 
 export const config: VercelConfig = {
   framework: "nextjs",
-  buildCommand: "pnpm db:setup && pnpm build",
+  buildCommand: "pnpm build",
   installCommand: "pnpm install --frozen-lockfile",
 
   headers: [

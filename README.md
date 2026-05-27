@@ -35,7 +35,7 @@ Click the button above. Vercel provisions a Neon Postgres database automatically
 - **ROUSHI_MCP_HTTP_TOKEN** — run `openssl rand -hex 32`
 - **CRON_SECRET** — run `openssl rand -hex 32`
 
-The first build runs `db:setup` automatically — no manual database work needed.
+After the first deploy succeeds, run `pnpm db:setup` once (locally or via Vercel CLI) to create the database tables and indexes.
 
 ### Option 2: Local development
 
