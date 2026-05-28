@@ -3,7 +3,7 @@
 // Adds the @vercel/analytics package + <Analytics /> component to the root
 // layout. Zero-config — works as soon as the project is deployed to Vercel.
 
-import type { Pattern } from "./_types.js";
+import type { Pattern } from "./_types";
 
 const PACKAGE = "@vercel/analytics";
 const IMPORT_LINE = `import { Analytics } from "@vercel/analytics/react";`;

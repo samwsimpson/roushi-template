@@ -9,8 +9,8 @@
 //   6. Auto-commits if the repo was clean
 
 import { GoogleAuth } from "google-auth-library";
-import type { Pattern } from "./_types.js";
-import type { Project } from "./_project.js";
+import type { Pattern } from "./_types";
+import type { Project } from "./_project";
 
 const PACKAGE = "@next/third-parties";
 const IMPORT_LINE = `import { GoogleAnalytics } from "@next/third-parties/google";`;

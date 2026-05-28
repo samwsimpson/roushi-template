@@ -7,13 +7,13 @@
 //   2. Add the import + entry below
 //   3. The CLI auto-picks it up
 
-import type { Pattern } from "./_types.js";
-import { isPattern } from "./_types.js";
+import type { Pattern } from "./_types";
+import { isPattern } from "./_types";
 
 // ─── Pattern imports ──────────────────────────────────────
-import { pattern as kumokodoFooter } from "./kumokodo-footer.js";
-import { pattern as vercelAnalytics } from "./vercel-analytics.js";
-import { pattern as googleAnalytics } from "./google-analytics.js";
+import { pattern as kumokodoFooter } from "./kumokodo-footer";
+import { pattern as vercelAnalytics } from "./vercel-analytics";
+import { pattern as googleAnalytics } from "./google-analytics";
 
 const ALL: Pattern[] = [kumokodoFooter, vercelAnalytics, googleAnalytics];
 

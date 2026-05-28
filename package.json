@@ -1,6 +1,6 @@
 {
   "name": "roushi",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "private": false,
   "description": "Self-wiring knowledge layer + autonomous coordination plane for portfolio operators",
   "engines": {

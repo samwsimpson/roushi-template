@@ -212,7 +212,7 @@ export default function HelpPage() {
 
       <Section id="mcp" title="MCP tools (Claude Code, Cursor, any MCP client)">
         <p>
-          35 tools as of v0.12.0. Local stdio is registered globally for fast access; the
+          35 tools as of v0.13.0. Local stdio is registered globally for fast access; the
           deployed HTTPS endpoint is below.
         </p>
         <ul className="ml-5 list-disc space-y-1 font-mono text-xs">
@@ -348,6 +348,37 @@ export default function HelpPage() {
           Browse <Link href="/playbooks" className="text-emerald-400 hover:underline">/playbooks</Link>{" "}
           to see them all, or create your own at{" "}
           <Link href="/playbooks/new" className="text-emerald-400 hover:underline">/playbooks/new</Link>.
+        </p>
+      </Section>
+
+      <Section id="patterns" title="Patterns — portfolio-wide automation">
+        <p>
+          <Link href="/patterns" className="text-emerald-400 hover:underline">/patterns</Link>{" "}
+          shows the compliance matrix: every product × every available pattern, with
+          status badges (applied, partial, not-applied, error). Patterns are typed,
+          detectable, applicable transforms — &quot;snippet + env var + commit&quot;
+          automation for things every project needs but everyone forgets.
+        </p>
+        <p>
+          Three patterns ship in v0.13.0:
+        </p>
+        <ul className="ml-5 list-disc space-y-1 text-sm">
+          <li><strong>kumokodo-footer</strong> — adds the SaaS / client attribution per the portfolio rule</li>
+          <li><strong>vercel-analytics</strong> — installs <code>@vercel/analytics</code> + <code>&lt;Analytics /&gt;</code></li>
+          <li><strong>google-analytics</strong> — full GA Admin API automation: creates a GA4 property + data stream, installs <code>@next/third-parties</code>, edits the layout, sets <code>NEXT_PUBLIC_GA_ID</code> on Vercel, auto-commits</li>
+        </ul>
+        <p className="mt-3">CLI surface:</p>
+        <pre className="mt-2 overflow-auto rounded bg-zinc-950 p-3 text-xs text-zinc-300">
+{`pnpm roushi pattern list                  # all patterns
+pnpm roushi pattern detect                # status on current project
+pnpm roushi pattern detect --portfolio    # matrix across every product
+pnpm roushi pattern apply <slug>          # apply (auto-commits if repo is clean)`}
+        </pre>
+        <p>
+          Apply auto-commits when the repo is clean. If WIP exists, it stages only and
+          warns. Never auto-pushes. Each pattern lives at <code>src/patterns/&lt;slug&gt;.ts</code>{" "}
+          and exports a <code>Pattern</code> with <code>detect()</code> + <code>apply()</code> —
+          add new patterns by dropping a new file and an import line in <code>_registry.ts</code>.
         </p>
       </Section>
 

@@ -8,7 +8,7 @@
 // This pattern detects whether the attribution is already present in the
 // project's root layout, and if not, prompts to add it.
 
-import type { Pattern } from "./_types.js";
+import type { Pattern } from "./_types";
 
 const SAAS_LINE = "A KumoKodo.ai SaaS application";
 const CLIENT_LINE = "Built by KumoKodo.ai";

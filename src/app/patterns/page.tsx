@@ -1,12 +1,12 @@
 import { sql } from "drizzle-orm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth } from "../../auth.js";
-import { authEnabled } from "../../auth.config.js";
-import { db } from "../../db/index.js";
-import { entities } from "../../db/schema.js";
-import { Project } from "../../patterns/_project.js";
-import { listPatterns } from "../../patterns/_registry.js";
+import { auth } from "../../auth";
+import { authEnabled } from "../../auth.config";
+import { db } from "../../db/index";
+import { entities } from "../../db/schema";
+import { Project } from "../../patterns/_project";
+import { listPatterns } from "../../patterns/_registry";
 
 export const metadata = {
   title: "Patterns — Roushi",

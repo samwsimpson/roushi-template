@@ -8,7 +8,7 @@
 // etc.). Each pattern declares how to detect its current state on a project
 // and how to apply itself, with proper rollback safety.
 
-import type { Project } from "./_project.js";
+import type { Project } from "./_project";
 
 export interface ParameterDef {
   /** Plain TypeScript type for the parameter value */

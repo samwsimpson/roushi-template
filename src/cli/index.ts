@@ -86,7 +86,7 @@ const program = new Command();
 program
   .name("roushi")
   .description("Roushi — ask the master")
-  .version("0.12.0");
+  .version("0.13.0");
 
 program
   .command("think <query>")
@@ -1688,7 +1688,7 @@ patternCmd
   .command("list")
   .description("List all available patterns")
   .action(async () => {
-    const { listPatterns } = await import("../patterns/_registry.js");
+    const { listPatterns } = await import("../patterns/_registry");
     const patterns = listPatterns();
     console.log("");
     for (const p of patterns) {
@@ -1703,8 +1703,8 @@ patternCmd
   .description("Check whether a pattern is applied to the current project (or all patterns if no slug). Add --portfolio to scan every product in the brain.")
   .option("--portfolio", "Scan every product entity in the brain instead of just cwd")
   .action(async (slug: string | undefined, opts: { portfolio?: boolean }) => {
-    const { listPatterns, getPattern } = await import("../patterns/_registry.js");
-    const { Project } = await import("../patterns/_project.js");
+    const { listPatterns, getPattern } = await import("../patterns/_registry");
+    const { Project } = await import("../patterns/_project");
     const patterns = slug ? [getPattern(slug)].filter(Boolean) : listPatterns();
     if (patterns.length === 0) {
       console.error(chalk.red(`No pattern with slug "${slug}"`));
@@ -1732,8 +1732,8 @@ patternCmd
     }
 
     // Portfolio mode — enumerate products from the brain
-    const { db } = await import("../db/index.js");
-    const { entities } = await import("../db/schema.js");
+    const { db } = await import("../db/index");
+    const { entities } = await import("../db/schema");
     const { sql } = await import("drizzle-orm");
     const rows = await db.execute<{
       slug: string;
@@ -1785,11 +1785,12 @@ patternCmd
 
 patternCmd
   .command("apply <slug>")
-  .description("Apply a pattern to the current project")
+  .description("Apply a pattern to the current project. Pass params as --key=value (e.g. --site-url=https://example.com).")
   .allowUnknownOption(true)
+  .allowExcessArguments(true)
   .action(async (slug: string, _opts: unknown, cmd: Command) => {
-    const { getPattern } = await import("../patterns/_registry.js");
-    const { Project } = await import("../patterns/_project.js");
+    const { getPattern } = await import("../patterns/_registry");
+    const { Project } = await import("../patterns/_project");
     const pattern = getPattern(slug);
     if (!pattern) {
       console.error(chalk.red(`No pattern with slug "${slug}"`));
