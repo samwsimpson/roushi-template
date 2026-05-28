@@ -28,7 +28,8 @@
     "roushi": "tsx --env-file=.env.local src/cli/index.ts",
     "mcp": "tsx --env-file=.env.local src/mcp/server.ts",
     "mcp:http": "tsx --env-file=.env.local src/mcp/http-server.ts",
-    "sync-template": "tsx scripts/sync-template.ts"
+    "sync-template": "tsx scripts/sync-template.ts",
+    "hooks:install": "tsx scripts/install-git-hooks.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "latest",
