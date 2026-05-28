@@ -132,16 +132,21 @@ export const pattern: Pattern = {
       const componentLine = `<GoogleAnalytics gaId={process.env.${ENV_VAR}!} />`;
       let updated = layout;
       if (!updated.includes(IMPORT_LINE)) {
-        const importRegex = /^import .+;\s*$/gm;
+        // Matches both `import X from 'y'` (no semicolon) and `import X from 'y';`
+        const importRegex = /^import\s.+from\s+['"][^'"]+['"];?\s*$/gm;
         let lastImportEnd = 0;
         let match: RegExpExecArray | null;
         while ((match = importRegex.exec(updated)) !== null) {
           lastImportEnd = match.index + match[0].length;
         }
-        updated =
-          updated.slice(0, lastImportEnd) +
-          `\n${IMPORT_LINE}` +
-          updated.slice(lastImportEnd);
+        if (lastImportEnd === 0) {
+          updated = `${IMPORT_LINE}\n${updated}`;
+        } else {
+          updated =
+            updated.slice(0, lastImportEnd) +
+            `\n${IMPORT_LINE}` +
+            updated.slice(lastImportEnd);
+        }
       }
       if (!updated.includes("<GoogleAnalytics")) {
         updated = updated.replace(
@@ -198,14 +203,14 @@ export const pattern: Pattern = {
 // ─── Helpers ────────────────────────────────────────────────
 
 async function findLayout(project: Project): Promise<string> {
-  const candidates = ["src/app/layout.tsx", "app/layout.tsx"];
-  for (const c of candidates) {
-    if (await project.fileExists(c)) return c;
+  const found = await project.findRootLayout();
+  if (!found) {
+    throw new Error(
+      "Could not find root layout — checked app/, src/app/, frontend/app/, apps/web/app/, apps/*/app/. " +
+        "This pattern only supports Next.js App Router projects.",
+    );
   }
-  throw new Error(
-    "Could not find root layout (looked at src/app/layout.tsx and app/layout.tsx). " +
-      "This pattern only supports Next.js App Router projects.",
-  );
+  return found;
 }
 
 async function gaFetch(

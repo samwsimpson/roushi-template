@@ -77,6 +77,47 @@ export class Project {
     }
   }
 
+  /**
+   * Locate the root layout.tsx for Next.js App Router projects. Walks
+   * common project shapes in order of specificity:
+   *
+   *   app/layout.tsx                   - flat (Roushi, Akiko)
+   *   src/app/layout.tsx               - src/-rooted
+   *   frontend/app/layout.tsx          - separate frontend/backend dirs (Aether)
+   *   apps/web/app/layout.tsx          - Turborepo with apps/web (Kodori)
+   *   apps/*+/app/layout.tsx           - any other Turborepo apps/* dir
+   *
+   * Returns null if no layout found.
+   */
+  async findRootLayout(): Promise<string | null> {
+    const candidates = [
+      "app/layout.tsx",
+      "src/app/layout.tsx",
+      "frontend/app/layout.tsx",
+      "apps/web/app/layout.tsx",
+    ];
+    for (const c of candidates) {
+      if (await this.fileExists(c)) return c;
+    }
+
+    // Fall back to scanning apps/*/app/layout.tsx in case the monorepo uses
+    // a non-"web" directory name
+    try {
+      const appsEntries = await fs.readdir(path.join(this.cwd, "apps"), {
+        withFileTypes: true,
+      });
+      for (const entry of appsEntries) {
+        if (!entry.isDirectory()) continue;
+        const candidate = `apps/${entry.name}/app/layout.tsx`;
+        if (await this.fileExists(candidate)) return candidate;
+      }
+    } catch {
+      // No apps/ dir — fine
+    }
+
+    return null;
+  }
+
   /** Returns true if any tracked file contains the pattern */
   grep(pattern: string, options: { glob?: string } = {}): boolean {
     try {
@@ -95,13 +136,22 @@ export class Project {
   // ─── Package.json ─────────────────────────────────────────
 
   async readPackageJson(): Promise<Record<string, unknown> | null> {
-    const content = await this.readFile("package.json");
-    if (!content) return null;
-    try {
-      return JSON.parse(content) as Record<string, unknown>;
-    } catch {
-      return null;
+    // Check the app root first (handles monorepo shapes), then fall back
+    // to the cwd. For most projects these are the same dir.
+    const appRoot = await this.findAppRoot();
+    const candidates = appRoot === this.cwd
+      ? ["package.json"]
+      : [path.relative(this.cwd, appRoot).replace(/\\/g, "/") + "/package.json", "package.json"];
+    for (const c of candidates) {
+      const content = await this.readFile(c);
+      if (!content) continue;
+      try {
+        return JSON.parse(content) as Record<string, unknown>;
+      } catch {
+        // try next candidate
+      }
     }
+    return null;
   }
 
   async hasDependency(name: string): Promise<boolean> {
@@ -112,18 +162,75 @@ export class Project {
     return Boolean(deps?.[name] ?? devDeps?.[name]);
   }
 
+  /**
+   * Returns the directory containing the project's primary package.json
+   * (the one tied to the Next.js app). For monorepo shapes (apps/web,
+   * frontend/, packages/), this is the dir where the app lives, not the
+   * repo root. Falls back to cwd if no nested package.json is more specific.
+   */
+  async findAppRoot(): Promise<string> {
+    // Reuse layout detection — wherever the layout is, that's the app dir.
+    // If frontend/app/layout.tsx → app root is frontend/.
+    // If apps/web/app/layout.tsx → app root is apps/web/.
+    const layout = await this.findRootLayout();
+    if (!layout) return this.cwd;
+    // Strip "app/layout.tsx" or "src/app/layout.tsx" off the end
+    let dir = path.dirname(layout);
+    if (dir.endsWith("app")) dir = path.dirname(dir);
+    if (dir.endsWith("src")) dir = path.dirname(dir);
+    const candidate = path.join(this.cwd, dir);
+    // Use this dir only if it has its own package.json; otherwise fall back to cwd
+    try {
+      await fs.access(path.join(candidate, "package.json"));
+      return candidate;
+    } catch {
+      return this.cwd;
+    }
+  }
+
   installPackage(name: string, options: { dev?: boolean } = {}): void {
     if (!isValidPackageName(name)) {
       throw new Error(`Invalid package name: ${name}`);
     }
     const args = ["add", ...(options.dev ? ["-D"] : []), name];
+    // installCwd needs to be the dir with the right package.json — for
+    // monorepo shapes the app's package.json may not be at the repo root.
     const result = spawnSafe("pnpm", args, {
-      cwd: this.cwd,
+      cwd: this.appRootSync(),
       stdio: "inherit",
     });
     if (result.status !== 0) {
       throw new Error(`pnpm add ${name} failed with exit code ${result.status}`);
     }
+  }
+
+  /** Sync sibling of findAppRoot for the (sync) installPackage path */
+  private appRootSync(): string {
+    // Try common layout candidate paths synchronously
+    const candidates = [
+      "app/layout.tsx",
+      "src/app/layout.tsx",
+      "frontend/app/layout.tsx",
+      "apps/web/app/layout.tsx",
+    ];
+    for (const c of candidates) {
+      try {
+        if (require("node:fs").existsSync(path.join(this.cwd, c))) {
+          let dir = path.dirname(c);
+          if (dir.endsWith("app")) dir = path.dirname(dir);
+          if (dir.endsWith("src")) dir = path.dirname(dir);
+          const candidateDir = path.join(this.cwd, dir);
+          if (
+            require("node:fs").existsSync(path.join(candidateDir, "package.json"))
+          ) {
+            return candidateDir;
+          }
+        }
+      } catch {
+        // continue
+      }
+    }
+    return this.cwd;
   }
 
   // ─── Env vars ─────────────────────────────────────────────

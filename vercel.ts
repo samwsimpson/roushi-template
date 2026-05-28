@@ -47,5 +47,14 @@ export const config: VercelConfig = {
       path: "/api/cron/contradictions",
       schedule: "0 6 * * 0",
     },
+    {
+      // Drift-check heartbeat — daily at 7am UTC. Vercel can't reach Sam's
+      // local source_path entries so most drift checks are no-ops in
+      // production; this run is mainly a heartbeat + a place to react to
+      // the brain-cached snapshot in future (v0.14). Local CLI runs
+      // (`pnpm roushi drift-check --post-goals`) post the actual findings.
+      path: "/api/cron/drift-check",
+      schedule: "0 7 * * *",
+    },
   ],
 };

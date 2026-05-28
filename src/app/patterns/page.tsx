@@ -7,6 +7,7 @@ import { db } from "../../db/index";
 import { entities } from "../../db/schema";
 import { Project } from "../../patterns/_project";
 import { listPatterns } from "../../patterns/_registry";
+import { readSnapshot } from "../../lib/pattern-snapshot";
 
 export const metadata = {
   title: "Patterns — Roushi",
@@ -27,7 +28,27 @@ interface Cell {
   missing?: string[];
 }
 
-async function loadMatrix() {
+async function loadMatrix(): Promise<{
+  patterns: { slug: string; name: string; description: string; category: string }[];
+  products: { slug: string; name: string; cells: Record<string, Cell> }[];
+  source: "snapshot" | "live";
+  generatedAt: string | null;
+}> {
+  // Try cached snapshot first — required when running on Vercel (filesystem
+  // can't reach local source_path entries). Run `pnpm roushi pattern detect
+  // --portfolio` locally to refresh.
+  const snapshot = await readSnapshot();
+  if (snapshot) {
+    return {
+      patterns: snapshot.patterns,
+      products: snapshot.products,
+      source: "snapshot",
+      generatedAt: snapshot.generatedAt,
+    };
+  }
+
+  // Fallback: live detection. Only works if cwd has filesystem access to all
+  // product source_path entries (i.e. running locally on Sam's machine).
   const patterns = listPatterns();
   const rows = await db.execute<ProductRow>(sql`
     SELECT slug, name, source_path, frontmatter
@@ -59,7 +80,29 @@ async function loadMatrix() {
     }),
   );
 
-  return { patterns, products };
+  return {
+    patterns: patterns.map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      description: p.description,
+      category: p.category,
+    })),
+    products,
+    source: "live",
+    generatedAt: null,
+  };
+}
+
+function timeAgo(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 export default async function PatternsPage() {
@@ -71,7 +114,7 @@ export default async function PatternsPage() {
     if (!session) redirect("/auth/signin?callbackUrl=/patterns");
   }
 
-  const { patterns, products } = await loadMatrix();
+  const { patterns, products, source, generatedAt } = await loadMatrix();
 
   // Summary counters
   const totalCells = patterns.length * products.length;
@@ -99,6 +142,21 @@ export default async function PatternsPage() {
           <code className="text-zinc-300">pnpm roushi pattern apply &lt;slug&gt;</code>{" "}
           in the project workspace to fix.
         </p>
+        {source === "snapshot" && generatedAt && (
+          <p className="mt-3 text-xs text-zinc-500">
+            Showing cached snapshot from <strong>{timeAgo(generatedAt)}</strong>.
+            Run <code className="text-zinc-300">pnpm roushi pattern detect --portfolio</code>{" "}
+            locally to refresh.
+          </p>
+        )}
+        {source === "live" && (
+          <p className="mt-3 text-xs text-amber-400">
+            No cached snapshot yet — running live detection. This only works if
+            you&apos;re on the machine where the product source_path entries live.
+            Run <code className="text-zinc-300">pnpm roushi pattern detect --portfolio</code>{" "}
+            to cache a snapshot for the deployed UI.
+          </p>
+        )}
       </header>
 
       <div className="mb-6 grid grid-cols-3 gap-4 sm:max-w-md">

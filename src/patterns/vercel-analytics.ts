@@ -41,25 +41,25 @@ export const pattern: Pattern = {
     const wasCleanBefore = project.isGitClean();
     const filesToStage: string[] = [];
 
+    // App root is where the package.json + layout live. For monorepos
+    // (apps/web, frontend/) this may be a subdir of the repo root.
+    const appRoot = await project.findAppRoot();
+    const appRootRel = appRoot === project.cwd ? "" : appRoot.slice(project.cwd.length + 1).replace(/\\/g, "/");
+
     // Step 1: install the package
     if (!(await project.hasDependency(PACKAGE))) {
       project.installPackage(PACKAGE);
-      filesToStage.push("package.json", "pnpm-lock.yaml");
+      filesToStage.push(
+        appRootRel ? `${appRootRel}/package.json` : "package.json",
+        appRootRel ? `${appRootRel}/pnpm-lock.yaml` : "pnpm-lock.yaml",
+      );
     }
 
     // Step 2: add the component to the root layout
-    const candidates = ["src/app/layout.tsx", "app/layout.tsx"];
-    let layoutPath: string | null = null;
-    for (const c of candidates) {
-      if (await project.fileExists(c)) {
-        layoutPath = c;
-        break;
-      }
-    }
-
+    const layoutPath = await project.findRootLayout();
     if (!layoutPath) {
       throw new Error(
-        "Could not find root layout (looked at src/app/layout.tsx and app/layout.tsx).",
+        "Could not find root layout — checked app/, src/app/, frontend/app/, apps/web/app/, apps/*/app/.",
       );
     }
 
@@ -73,17 +73,23 @@ export const pattern: Pattern = {
       // Add import (after the last existing import) + component (before </body>)
       let updated = layout;
       if (!updated.includes(IMPORT_LINE)) {
-        // Insert after the last import statement
-        const importRegex = /^import .+;\s*$/gm;
+        // Insert after the last import statement.
+        // Matches both `import X from 'y'` (no semicolon) and `import X from 'y';`
+        const importRegex = /^import\s.+from\s+['"][^'"]+['"];?\s*$/gm;
         let lastImportEnd = 0;
         let match: RegExpExecArray | null;
         while ((match = importRegex.exec(updated)) !== null) {
           lastImportEnd = match.index + match[0].length;
         }
-        updated =
-          updated.slice(0, lastImportEnd) +
-          `\n${IMPORT_LINE}` +
-          updated.slice(lastImportEnd);
+        if (lastImportEnd === 0) {
+          // No existing imports found — prepend (rare, mostly for tests)
+          updated = `${IMPORT_LINE}\n${updated}`;
+        } else {
+          updated =
+            updated.slice(0, lastImportEnd) +
+            `\n${IMPORT_LINE}` +
+            updated.slice(lastImportEnd);
+        }
       }
       if (!updated.includes(COMPONENT)) {
         updated = updated.replace(/<\/body>/, `  ${COMPONENT}\n      </body>`);

@@ -1781,6 +1781,33 @@ patternCmd
       }
       process.stdout.write("\n");
     }
+
+    // Cache snapshot in the brain so the deployed /patterns UI can read it
+    try {
+      const { writeSnapshot } = await import("../lib/pattern-snapshot");
+      const snapshotProducts = productSlugs.map((s) => {
+        const productRow = rows.rows.find((r) => r.slug === s)!;
+        const cells: Record<string, { status: string; detail?: string; missing?: string[] }> = {};
+        for (const p of patterns) {
+          cells[p!.slug] = { status: matrix[s]![p!.slug] ?? "error" };
+        }
+        return { slug: s, name: productRow.name, cells };
+      });
+      await writeSnapshot({
+        patterns: patterns.map((p) => ({
+          slug: p!.slug,
+          name: p!.name,
+          description: p!.description,
+          category: p!.category,
+        })),
+        products: snapshotProducts,
+        source: "cli",
+      });
+      console.log("");
+      console.log(chalk.dim("✓ Snapshot cached to brain — /patterns UI will show this data."));
+    } catch (err) {
+      console.warn(chalk.yellow(`⚠ Couldn't cache snapshot: ${err instanceof Error ? err.message : String(err)}`));
+    }
   });
 
 patternCmd
@@ -1818,6 +1845,70 @@ patternCmd
       console.error(chalk.red(`\n✗ Failed: ${err instanceof Error ? err.message : String(err)}`));
       process.exit(1);
     }
+  });
+
+// ─── drift-check ─── (scan every product for shipment-sweep drift)
+
+program
+  .command("drift-check")
+  .description("Scan every product in the brain for shipment-sweep drift (version + CHANGELOG + partial patterns)")
+  .option("-p, --product <slug>", "limit to one product (comma-separated for multiple)")
+  .option("--skip-patterns", "skip pattern partial-state checks (faster)")
+  .option("--post-goals", "upsert a [system] Drift: goal per product with errors (closes when clean)")
+  .action(async (opts: { product?: string; skipPatterns?: boolean; postGoals?: boolean }) => {
+    const { runDriftCheck } = await import("../lib/drift-check");
+    const productSlugs = opts.product?.split(",").map((s) => s.trim()).filter(Boolean);
+    const findings = await runDriftCheck({
+      productSlugs,
+      skipPatterns: opts.skipPatterns,
+      postGoals: opts.postGoals,
+    });
+
+    if (findings.length === 0) {
+      console.log(chalk.green("✓ No drift detected across the portfolio."));
+      return;
+    }
+
+    // Group by product
+    const byProduct = new Map<string, typeof findings>();
+    for (const f of findings) {
+      const arr = byProduct.get(f.productSlug) ?? [];
+      arr.push(f);
+      byProduct.set(f.productSlug, arr);
+    }
+
+    let errors = 0;
+    let warnings = 0;
+    let infos = 0;
+    for (const f of findings) {
+      if (f.severity === "error") errors++;
+      else if (f.severity === "warning") warnings++;
+      else infos++;
+    }
+
+    console.log("");
+    console.log(
+      `${chalk.red(`${errors} errors`)} · ${chalk.yellow(`${warnings} warnings`)} · ${chalk.dim(`${infos} info`)}`,
+    );
+    console.log("");
+
+    for (const [slug, items] of byProduct) {
+      const first = items[0]!;
+      console.log(chalk.bold(`${first.productName}  ${chalk.dim(`(${slug})`)}`));
+      for (const f of items) {
+        const icon =
+          f.severity === "error"
+            ? chalk.red("✗")
+            : f.severity === "warning"
+              ? chalk.yellow("~")
+              : chalk.dim("ⓘ");
+        console.log(`  ${icon} [${f.category}] ${f.message}`);
+        if (f.fix) console.log(`    ${chalk.dim(`fix: ${f.fix}`)}`);
+      }
+      console.log("");
+    }
+
+    if (errors > 0) process.exit(1);
   });
 
 program.parseAsync().catch((err) => {

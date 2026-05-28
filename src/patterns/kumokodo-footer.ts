@@ -62,20 +62,10 @@ export const pattern: Pattern = {
 
     const wasCleanBefore = project.isGitClean();
 
-    // Find the root layout. Next.js App Router puts it at src/app/layout.tsx
-    // or app/layout.tsx — check both.
-    const candidates = ["src/app/layout.tsx", "app/layout.tsx"];
-    let layoutPath: string | null = null;
-    for (const c of candidates) {
-      if (await project.fileExists(c)) {
-        layoutPath = c;
-        break;
-      }
-    }
-
+    const layoutPath = await project.findRootLayout();
     if (!layoutPath) {
       throw new Error(
-        "Could not find root layout (looked at src/app/layout.tsx and app/layout.tsx). " +
+        "Could not find root layout — checked app/, src/app/, frontend/app/, apps/web/app/, apps/*/app/. " +
           "This pattern only supports Next.js App Router projects right now.",
       );
     }
