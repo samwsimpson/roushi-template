@@ -23,6 +23,8 @@ const PUBLIC_MARKETING_PATHS = new Set([
   "/how-it-works",
   "/use-cases",
   "/pricing",
+  "/install",
+  "/onboarding",
   "/about",
   "/blog",
 ]);

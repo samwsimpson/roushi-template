@@ -27,7 +27,8 @@
     "test:watch": "vitest",
     "roushi": "tsx --env-file=.env.local src/cli/index.ts",
     "mcp": "tsx --env-file=.env.local src/mcp/server.ts",
-    "mcp:http": "tsx --env-file=.env.local src/mcp/http-server.ts"
+    "mcp:http": "tsx --env-file=.env.local src/mcp/http-server.ts",
+    "sync-template": "tsx scripts/sync-template.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "latest",
@@ -35,11 +36,14 @@
     "@modelcontextprotocol/sdk": "latest",
     "@neondatabase/serverless": "latest",
     "@tailwindcss/postcss": "latest",
+    "@types/cross-spawn": "^6.0.6",
+    "@vercel/analytics": "^2.0.1",
     "ai": "latest",
     "chalk": "latest",
     "class-variance-authority": "latest",
     "clsx": "latest",
     "commander": "latest",
+    "cross-spawn": "^7.0.6",
     "cytoscape": "^3.33.4",
     "date-fns": "latest",
     "drizzle-orm": "latest",
@@ -69,6 +73,7 @@
     "@vercel/config": "^0.5.0",
     "dotenv": "latest",
     "drizzle-kit": "latest",
+    "google-auth-library": "^10.6.2",
     "tsx": "latest",
     "typescript": "latest",
     "vitest": "latest"

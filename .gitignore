@@ -16,6 +16,11 @@ dist/
 .env.production
 !.env.example
 
+# Secrets (service account keys, etc.)
+.secrets/
+*.key.json
+*-service-account.json
+
 # Auth.js
 .auth/
 

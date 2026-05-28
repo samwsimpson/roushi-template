@@ -43,6 +43,7 @@ const MARKETING_PATHS = new Set([
   "/use-cases",
   "/pricing",
   "/install",
+  "/onboarding",
   "/about",
   "/blog",
 ]);
@@ -130,6 +131,9 @@ function MarketingNav({ isSignedIn }: { isSignedIn: boolean }) {
           <Link href="/install" className="text-zinc-400 transition hover:text-zinc-100">
             Install
           </Link>
+          <Link href="/onboarding" className="text-zinc-400 transition hover:text-zinc-100">
+            Start
+          </Link>
           <Link href="/about" className="text-zinc-400 transition hover:text-zinc-100">
             About
           </Link>
@@ -189,6 +193,9 @@ function AppNav({ session, authEnabled }: TopNavProps) {
           </Link>
           <Link href="/skills" className="text-zinc-400 transition hover:text-zinc-100">
             Skills
+          </Link>
+          <Link href="/patterns" className="text-zinc-400 transition hover:text-zinc-100">
+            Patterns
           </Link>
           <Link href="/optimize" className="text-zinc-400 transition hover:text-zinc-100">
             Optimize

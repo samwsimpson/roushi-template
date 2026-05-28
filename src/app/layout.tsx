@@ -8,6 +8,7 @@ import { BackToTop } from "./components/BackToTop";
 import { TopNav } from "./components/TopNav";
 import "./globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
 // Three typefaces wired via CSS variables so Tailwind 4's @theme can read
 // them. Loaded once at the root layout — Next inlines and self-hosts so
 // there's no third-party request on first paint.
@@ -123,6 +124,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           </div>
         </footer>
         <BackToTop />
+        <Analytics />
       </body>
     </html>
   );

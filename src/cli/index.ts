@@ -1678,6 +1678,147 @@ rules
     }
   });
 
+// ─── pattern ─── (apply portfolio-wide automation transforms)
+
+const patternCmd = program
+  .command("pattern")
+  .description("Portfolio-wide automation patterns (analytics, branding, integrations)");
+
+patternCmd
+  .command("list")
+  .description("List all available patterns")
+  .action(async () => {
+    const { listPatterns } = await import("../patterns/_registry.js");
+    const patterns = listPatterns();
+    console.log("");
+    for (const p of patterns) {
+      console.log(chalk.bold(p.slug) + chalk.dim(`  [${p.category}]`));
+      console.log(`  ${p.description}`);
+      console.log("");
+    }
+  });
+
+patternCmd
+  .command("detect [slug]")
+  .description("Check whether a pattern is applied to the current project (or all patterns if no slug). Add --portfolio to scan every product in the brain.")
+  .option("--portfolio", "Scan every product entity in the brain instead of just cwd")
+  .action(async (slug: string | undefined, opts: { portfolio?: boolean }) => {
+    const { listPatterns, getPattern } = await import("../patterns/_registry.js");
+    const { Project } = await import("../patterns/_project.js");
+    const patterns = slug ? [getPattern(slug)].filter(Boolean) : listPatterns();
+    if (patterns.length === 0) {
+      console.error(chalk.red(`No pattern with slug "${slug}"`));
+      process.exit(1);
+    }
+
+    const iconFor = (status: string) =>
+      status === "applied"
+        ? chalk.green("✓")
+        : status === "partial"
+          ? chalk.yellow("~")
+          : status === "not-applied"
+            ? chalk.dim("○")
+            : chalk.red("✗");
+
+    if (!opts.portfolio) {
+      const project = new Project({ cwd: process.cwd() });
+      for (const p of patterns) {
+        const result = await p!.detect(project);
+        console.log(`${iconFor(result.status)} ${chalk.bold(p!.slug)}  ${chalk.dim(result.status)}`);
+        if (result.detail) console.log(`  ${chalk.dim(result.detail)}`);
+        if (result.missing?.length) console.log(`  ${chalk.dim(`missing: ${result.missing.join(", ")}`)}`);
+      }
+      return;
+    }
+
+    // Portfolio mode — enumerate products from the brain
+    const { db } = await import("../db/index.js");
+    const { entities } = await import("../db/schema.js");
+    const { sql } = await import("drizzle-orm");
+    const rows = await db.execute<{
+      slug: string;
+      name: string;
+      source_path: string | null;
+      frontmatter: Record<string, unknown>;
+    }>(sql`
+      SELECT slug, name, source_path, frontmatter
+      FROM ${entities}
+      WHERE type = 'product' AND source_path IS NOT NULL
+      ORDER BY slug
+    `);
+
+    // Build a matrix
+    const productSlugs = rows.rows.map((r) => r.slug);
+    const matrix: Record<string, Record<string, string>> = {};
+    for (const product of rows.rows) {
+      matrix[product.slug] = {};
+      const project = new Project({
+        cwd: product.source_path!,
+        productSlug: product.slug,
+        domain: (product.frontmatter?.domain as string | undefined) ?? null,
+      });
+      for (const p of patterns) {
+        try {
+          const result = await p!.detect(project);
+          matrix[product.slug]![p!.slug] = result.status;
+        } catch (err) {
+          matrix[product.slug]![p!.slug] = "error";
+        }
+      }
+    }
+
+    // Print as table
+    const colWidth = Math.max(...patterns.map((p) => p!.slug.length), 16) + 2;
+    const productWidth = Math.max(...productSlugs.map((s) => s.length), 12) + 2;
+    process.stdout.write(" ".repeat(productWidth));
+    for (const p of patterns) process.stdout.write(chalk.bold(p!.slug.padEnd(colWidth)));
+    process.stdout.write("\n");
+    for (const productSlug of productSlugs) {
+      process.stdout.write(chalk.bold(productSlug.padEnd(productWidth)));
+      for (const p of patterns) {
+        const status = matrix[productSlug]![p!.slug] ?? "?";
+        process.stdout.write(`${iconFor(status)} ${chalk.dim(status.padEnd(colWidth - 2))}`);
+      }
+      process.stdout.write("\n");
+    }
+  });
+
+patternCmd
+  .command("apply <slug>")
+  .description("Apply a pattern to the current project")
+  .allowUnknownOption(true)
+  .action(async (slug: string, _opts: unknown, cmd: Command) => {
+    const { getPattern } = await import("../patterns/_registry.js");
+    const { Project } = await import("../patterns/_project.js");
+    const pattern = getPattern(slug);
+    if (!pattern) {
+      console.error(chalk.red(`No pattern with slug "${slug}"`));
+      process.exit(1);
+    }
+
+    // Parse --key=value pairs from unknown args
+    const params: Record<string, string | number | boolean> = {};
+    const raw = cmd.args.slice(1);
+    for (const arg of raw) {
+      const m = arg.match(/^--([a-zA-Z0-9-]+)=(.+)$/);
+      if (m && m[1] && m[2] !== undefined) {
+        const key = m[1].replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+        params[key] = m[2];
+      }
+    }
+
+    const project = new Project({ cwd: process.cwd() });
+    console.log(chalk.bold(`Applying ${pattern.name} to ${project.cwd}`));
+    try {
+      // Pattern.apply uses a generic param map — cast to satisfy the contract.
+      await pattern.apply(project, params as never);
+      console.log(chalk.green(`\n✓ Pattern "${slug}" applied`));
+    } catch (err) {
+      console.error(chalk.red(`\n✗ Failed: ${err instanceof Error ? err.message : String(err)}`));
+      process.exit(1);
+    }
+  });
+
 program.parseAsync().catch((err) => {
   console.error(chalk.red(`Error: ${err instanceof Error ? err.message : String(err)}`));
   process.exit(1);

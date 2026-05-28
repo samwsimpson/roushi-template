@@ -4,10 +4,10 @@ import { SealStamp } from "../components/SealStamp";
 
 const DEPLOY_URL =
   "https://vercel.com/new/clone" +
-  "?repository-url=https%3A%2F%2Fgithub.com%2Fsamwsimpson%2FRoushi" +
+  "?repository-url=https%3A%2F%2Fgithub.com%2Fsamwsimpson%2Froushi-template" +
   "&env=OPENAI_API_KEY,AUTH_SECRET,ROUSHI_MCP_HTTP_TOKEN,CRON_SECRET" +
   "&envDescription=Required%20env%20vars.%20See%20.env.example%20for%20details." +
-  "&envLink=https%3A%2F%2Fgithub.com%2Fsamwsimpson%2FRoushi%2Fblob%2Fmain%2F.env.example" +
+  "&envLink=https%3A%2F%2Fgithub.com%2Fsamwsimpson%2Froushi-template%2Fblob%2Fmain%2F.env.example" +
   "&project-name=roushi" +
   "&stores=%5B%7B%22type%22%3A%22postgres%22%7D%5D";
 
@@ -68,7 +68,7 @@ export default function InstallPage() {
             <Step n={1} title="Click the button above">
               <p>
                 Vercel clones the repo into your GitHub account, provisions a
-                Neon Postgres database, and prompts you for two required keys:
+                Neon Postgres database, and prompts you for four keys:
               </p>
               <ul className="ml-5 list-disc space-y-1 text-zinc-300">
                 <li>
@@ -84,17 +84,28 @@ export default function InstallPage() {
                   (free tier works).
                 </li>
                 <li>
-                  <strong>AUTH_SECRET</strong> — any random string. Run{" "}
+                  <strong>AUTH_SECRET</strong> — secures your sessions. Run{" "}
                   <code>openssl rand -base64 32</code> in your terminal.
+                </li>
+                <li>
+                  <strong>ROUSHI_MCP_HTTP_TOKEN</strong> — protects your MCP API
+                  endpoint. Run <code>openssl rand -hex 32</code>.
+                </li>
+                <li>
+                  <strong>CRON_SECRET</strong> — authenticates the automated
+                  maintenance jobs. Run <code>openssl rand -hex 32</code>.
                 </li>
               </ul>
             </Step>
-            <Step n={2} title="Wait for the first build">
+            <Step n={2} title="First deploy + database setup">
               <p>
-                The build command runs <code>db:setup</code> automatically —
-                extensions, schema push, and indexes all land on the first
-                deploy. No manual database setup needed.
+                Wait for the first build to complete (~30 seconds). Then run the
+                database setup once — clone your new repo locally and:
               </p>
+              <Code>{`cd roushi
+pnpm install
+vercel env pull .env.local   # pulls DATABASE_URL from Vercel
+pnpm db:setup                # creates tables + indexes`}</Code>
             </Step>
             <Step n={3} title="Visit your instance">
               <p>
@@ -118,6 +129,19 @@ pnpm roushi ingest ./content`}</Code>
                 connect.
               </p>
             </Step>
+            <div className="rounded-lg border border-vermilion/30 bg-vermilion/5 p-5">
+              <p className="text-sm text-zinc-200">
+                <strong>Deployed?</strong> Head to{" "}
+                <Link
+                  href="/onboarding"
+                  className="text-vermilion hover:underline"
+                >
+                  /onboarding
+                </Link>{" "}
+                for the five things to do in your first ten minutes that make
+                Roushi click.
+              </p>
+            </div>
           </Method>
 
           <Method
@@ -178,19 +202,19 @@ mcp__roushi__roushi_search "your query here"`}</Code>
                 Marketplace.
               </p>
             </Step>
-            <Step n={2} title="Configure your token">
+            <Step n={2} title="Configure your endpoint + token">
               <p>
                 Open VS Code Settings (<kbd>Ctrl+,</kbd>) → search{" "}
                 <strong>roushi</strong>:
               </p>
               <ul className="ml-5 list-disc space-y-1 text-zinc-300">
                 <li>
-                  <strong>Endpoint:</strong>{" "}
-                  <code>https://roushi.ai/api/mcp</code> (default)
+                  <strong>Endpoint:</strong> your instance URL — e.g.{" "}
+                  <code>https://roushi-yourname.vercel.app/api/mcp</code>
                 </li>
                 <li>
-                  <strong>Token:</strong> your{" "}
-                  <code>ROUSHI_MCP_HTTP_TOKEN</code>
+                  <strong>Token:</strong> the{" "}
+                  <code>ROUSHI_MCP_HTTP_TOKEN</code> you generated during deploy
                 </li>
               </ul>
             </Step>
@@ -244,8 +268,8 @@ mcp__roushi__roushi_search "your query here"`}</Code>
               without any IDE coupling.
             </p>
             <Step n={1} title="Clone and install">
-              <Code>{`git clone https://github.com/samwsimpson/Roushi
-cd Roushi
+              <Code>{`git clone https://github.com/samwsimpson/roushi-template
+cd roushi-template
 pnpm install
 cp .env.example .env.local  # fill in DATABASE_URL, OPENAI_API_KEY
 pnpm db:setup`}</Code>
@@ -264,11 +288,17 @@ pnpm roushi skill list`}</Code>
 
         <section className="text-center">
           <p className="text-lg text-zinc-300">
-            Need a token? Request beta access and we&apos;ll set you up.
+            The Deploy to Vercel path is fully self-service — no token from us
+            needed. You generate your own keys and own your instance.
+          </p>
+          <p className="mt-4 text-sm text-zinc-400">
+            Want a managed hosted instance instead? We&apos;re working on a SaaS
+            tier — request early access and we&apos;ll reach out when it&apos;s
+            ready.
           </p>
           <div className="mt-8 flex justify-center">
             <SealStamp href="/about#request-beta">
-              Request beta access
+              Request managed access
             </SealStamp>
           </div>
           <div className="mt-12 flex justify-center gap-6 text-sm">
@@ -279,7 +309,7 @@ pnpm roushi skill list`}</Code>
               Full reference →
             </Link>
             <a
-              href="https://github.com/samwsimpson/Roushi"
+              href="https://github.com/samwsimpson/roushi-template"
               target="_blank"
               rel="noreferrer noopener"
               className="seal-underline text-zinc-300"
