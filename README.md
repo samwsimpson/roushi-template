@@ -45,6 +45,7 @@ cd roushi
 pnpm install
 cp .env.example .env.local                      # fill in DATABASE_URL, OPENAI_API_KEY
 pnpm db:setup                                    # extensions → schema → indexes
+pnpm hooks:install                               # pre-commit shipment-sweep check
 pnpm dev                                         # http://localhost:3000
 ```
 
