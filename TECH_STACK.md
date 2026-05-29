@@ -11,7 +11,7 @@
 | Primitive | Why it matters |
 |---|---|
 | **Markdown files as source of truth** | If Postgres dies, knowledge survives as plain text in git. Rebuildable. Portable. Inspectable. |
-| **Postgres + pgvector as the index** | SQL queries unlock arbitrary reporting; pgvector enables semantic search; same DB Sam already runs across the portfolio (Neon). |
+| **Postgres + pgvector as the index** | SQL queries unlock arbitrary reporting; pgvector enables semantic search; widely available via Neon. |
 | **Hybrid search (HNSW + tsvector + RRF)** | Vector-only RAG misses ~17% of correct answers; RRF fusion lifts Recall@5 from 83% → 95% per GBrain benchmarks. |
 | **Zero-LLM graph extraction** | Wikilink + typed-link regex extraction has no per-write LLM cost — graph stays fresh on every save without burning tokens. |
 | **MCP server** | Universal LLM↔tool protocol. One implementation reaches Claude Code, Claude Desktop, Cursor, Windsurf, custom agents, and every future client. |
@@ -126,12 +126,12 @@ We learn from GBrain's architecture (hybrid search, zero-LLM extraction, RRF) bu
 
 ## Multi-machine architecture
 
-Sam works exclusively on his Alienware desktop (no laptop) — but multi-machine is desired for future workstations, mobile access, and team scenarios.
+Roushi is designed for operators who work across multiple devices and team members. Local CLI + MCP, web UI from anywhere, deployed Postgres as the single source of truth.
 
 ```
 ┌────────────────────┐    ┌────────────────────┐    ┌────────────────────┐
-│  Alienware Desktop │    │      Mobile        │    │  Future workstation│
-│  (Claude Code,     │    │      (web UI)      │    │  / team member     │
+│  Primary workstation│    │      Mobile        │    │  Team member       │
+│  (Claude Code,     │    │      (web UI)      │    │                    │
 │   CLI, MCP local)  │    │                    │    │                    │
 └──────────┬─────────┘    └─────────┬──────────┘    └─────────┬──────────┘
            │                        │                          │
@@ -357,14 +357,14 @@ At v2 (SaaS, 100 paying users), unit economics target: <30% COGS per user (per i
 ### D20: Pattern system as portfolio-wide automation primitive
 
 - **What:** A new `Pattern` type at `src/patterns/_types.ts` with `detect(project)` + `apply(project, params)` methods. Each pattern is a standalone TypeScript file in `src/patterns/<slug>.ts` exporting a `pattern: Pattern` const. The CLI surface (`pnpm roushi pattern list / detect [--portfolio] / apply <slug>`) consumes them. A `Project` helper (`src/patterns/_project.ts`) wraps file/grep/env/git/package operations with safety rules: auto-commit only on clean repos (otherwise stage + warn), validated input regexes (env keys, package names), `cross-spawn` for safe Windows `.cmd` shim execution, and refuses to stage paths containing `..` or absolute paths.
-- **Why:** Sam asked for the Vercel-Marketplace experience for things like Google Analytics. GA isn't a Marketplace integration (no infrastructure to provision), but the same "snippet + env var + commit" automation is exactly the kind of thing that should be codified once and applied across the portfolio. The pattern system makes that primitive — every future "everyone needs this, everyone forgets" change (Aether widget, Sentry integration, KumoKodo footer compliance, etc.) becomes a 30-minute pattern file.
+- **Why:** Operators repeatedly hit the same pain: "every project needs Google Analytics / Sentry / a tracking widget, but I forget which products have what." GA isn't a Vercel Marketplace integration (no infrastructure to provision), but the same "snippet + env var + commit" automation is exactly the kind of thing that should be codified once and applied across a portfolio. The pattern system makes that primitive — every future recurring change becomes a 30-minute pattern file.
 - **Alternatives:** Bash scripts per integration (no detection, no type safety, no portfolio matrix), Vercel Marketplace integrations only (limited to vendors that build them), client-side configurator in the web UI (worse UX than CLI for developers).
 - **Date:** 2026-05-28
 
 ### D19: Canonical surface taxonomy + per-project surface declaration in CLAUDE.md
 
 - **What:** `portfolio-shipment-sweep` (rule, `applies_to_type: product`) defines the canonical vocabulary of marketing-surface categories — `homepage`, `pricing`, `features`, `help`, `verticals`, `compares`, `security`, `case-studies`, `about`, `api-docs`, `changelog-public`, `blog`, `umbrella-card`, `umbrella-case-study` for SaaS products; `wordpress-listing` / `plugin-header` / `github-readme` for plugins; `client-deliverable` / `client-portal` / `status-report` / `sow` for client work; `pitch-deck` / `investor-readme` / `pitch-landing` for fundraising. Each project's CLAUDE.md gets a `## Marketing surfaces` block declaring which categories apply with their actual paths. Per-product sweep rules (D18) reference this block instead of re-enumerating surfaces.
-- **Why:** D18 worked but had two problems: (a) the surface list lived in the rule, duplicating across products that had similar shapes, and (b) for products without their own sweep rule yet, the agent had no list to walk. Sam observed (2026-05-27): *"Not all projects have the same files, especially the marketing and help pages."* The taxonomy + per-project declaration handles SiteBeacon (~2 surfaces) and Kodori (~18 surfaces) under the same vocabulary without diluting either. The CLAUDE.md location ensures the agent sees the declaration at session start, not buried in a rule file.
+- **Why:** D18 worked but had two problems: (a) the surface list lived in the rule, duplicating across products that had similar shapes, and (b) for products without their own sweep rule yet, the agent had no list to walk. The reality is that not all projects have the same files — a marketing-heavy SaaS may have 18 surfaces while a single-purpose tool has 2. The taxonomy + per-project declaration handles both under the same vocabulary without diluting either. The CLAUDE.md location ensures the agent sees the declaration at session start, not buried in a rule file.
 - **Alternatives:** Keep the full surface list in each per-product rule (current D18 — works but encourages copy-paste drift), put the declaration in a separate `roushi-project.md` file (more files for the agent to load), put it in the product entity's frontmatter in the brain (cleanest but requires schema work). CLAUDE.md is the load-bearing point; declarations belong there.
 - **Date:** 2026-05-27
 
