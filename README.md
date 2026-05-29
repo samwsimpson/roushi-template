@@ -95,6 +95,35 @@ Then set your endpoint + token in VS Code Settings → search "roushi".
 
 ---
 
+## Keeping your instance up to date
+
+Your deployment is a **fork snapshot** — when this template repo gets new features or fixes, your fork doesn't auto-update. Three ways to pull updates, in order of effort:
+
+### Automatic (recommended): the included sync workflow
+
+The template ships with `.github/workflows/sync-upstream.yml` — a daily scheduled GitHub Action that checks for upstream changes and opens a PR in your fork when there are commits to merge. You review the PR and click Merge — that's the whole flow.
+
+**Setup:** in your fork's repo, go to **Actions** → enable workflows (GitHub disables them by default on forks). Once enabled, the action runs daily at 12:00 UTC. You can also trigger it manually via the **Actions** tab → "Sync from upstream" → "Run workflow."
+
+### Manual via GitHub: "Sync fork" button
+
+Visit your fork's repo on GitHub. If there are upstream commits ahead, GitHub shows a **"Sync fork"** button at the top. Click it → "Update branch." Done. No PR review — changes land directly on `main`.
+
+### Manual via CLI
+
+```bash
+git remote add upstream https://github.com/samwsimpson/roushi-template.git
+git fetch upstream
+git merge upstream/main
+git push origin main
+```
+
+After any of these, redeploy on Vercel — the changes go live on your instance.
+
+> **Future:** when Roushi ships as a managed SaaS (v2 roadmap), you won't have to manage updates at all — they'll roll out automatically across all hosted instances. The self-hosted template path stays available forever for operators who want to own their stack.
+
+---
+
 ## Content structure
 
 ```

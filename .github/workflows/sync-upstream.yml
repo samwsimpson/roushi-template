@@ -1,0 +1,89 @@
+name: Sync from upstream
+
+# Auto-PRs upstream changes from samwsimpson/roushi-template into this fork.
+#
+# Runs daily and on-demand. When the upstream has new commits, opens a PR
+# titled "Sync from upstream (roushi-template)" with the diff. You review
+# and click Merge.
+#
+# Why a PR and not a direct push: lets you review what's changing before
+# it touches your main branch. If a sync introduces a breaking change or
+# behaviour you don't want, you close the PR and stay on your current code.
+#
+# Disable if you don't want auto-sync: delete this file from your fork,
+# or disable the workflow in GitHub Actions UI.
+
+on:
+  schedule:
+    # Daily at 12:00 UTC
+    - cron: "0 12 * * *"
+  workflow_dispatch: # manual trigger from the Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Skip when the upstream IS this repo (sync workflow running on the
+    # template itself would be a no-op infinite loop)
+    if: github.repository != 'samwsimpson/roushi-template'
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "roushi-sync-bot"
+          git config user.email "roushi-sync-bot@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/samwsimpson/roushi-template.git
+
+      - name: Fetch upstream
+        run: git fetch upstream main
+
+      - name: Check if upstream has new commits
+        id: check
+        run: |
+          BEHIND=$(git rev-list --count HEAD..upstream/main)
+          echo "behind=$BEHIND" >> $GITHUB_OUTPUT
+          if [ "$BEHIND" -eq "0" ]; then
+            echo "Already up to date with upstream — no PR needed."
+          else
+            echo "Fork is $BEHIND commits behind upstream — will open a PR."
+          fi
+
+      - name: Create sync branch
+        if: steps.check.outputs.behind != '0'
+        id: branch
+        run: |
+          BRANCH="sync-upstream/$(date +%Y%m%d-%H%M%S)"
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          git checkout -b "$BRANCH" upstream/main
+          git push origin "$BRANCH"
+
+      - name: Open PR
+        if: steps.check.outputs.behind != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "${{ steps.branch.outputs.branch }}" \
+            --title "Sync from upstream (roushi-template): ${{ steps.check.outputs.behind }} new commits" \
+            --body "Automated PR from \`.github/workflows/sync-upstream.yml\`.
+
+          This PR brings your fork up to date with [samwsimpson/roushi-template](https://github.com/samwsimpson/roushi-template) — ${{ steps.check.outputs.behind }} commits ahead.
+
+          **What to do:**
+          1. Review the changed files below
+          2. If anything would break your instance (you customized something the upstream also changed), comment and decide what to keep
+          3. Click **Merge pull request** when ready
+          4. Vercel will redeploy automatically
+
+          **Don't want auto-sync?** Disable the workflow in your fork's Actions tab, or delete \`.github/workflows/sync-upstream.yml\`."
