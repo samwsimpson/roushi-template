@@ -9,6 +9,7 @@ import { TopNav } from "./components/TopNav";
 import "./globals.css";
 
 import { Analytics } from "@vercel/analytics/react";
+import { GoogleAnalytics } from "@next/third-parties/google";
 // Three typefaces wired via CSS variables so Tailwind 4's @theme can read
 // them. Loaded once at the root layout — Next inlines and self-hosts so
 // there's no third-party request on first paint.
@@ -101,7 +102,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 Changelog
               </Link>
               <a
-                href="https://github.com/samwsimpson/Roushi"
+                href="https://github.com/samwsimpson/roushi-template"
                 target="_blank"
                 rel="noreferrer noopener"
                 className="transition hover:text-zinc-300"
@@ -125,6 +126,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         </footer>
         <BackToTop />
         <Analytics />
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID!} />
       </body>
     </html>
   );

@@ -36,6 +36,7 @@
     "@auth/drizzle-adapter": "latest",
     "@modelcontextprotocol/sdk": "latest",
     "@neondatabase/serverless": "latest",
+    "@next/third-parties": "^16.2.6",
     "@tailwindcss/postcss": "latest",
     "@types/cross-spawn": "^6.0.6",
     "@vercel/analytics": "^2.0.1",

@@ -80,7 +80,7 @@ export default function HowItWorksPage() {
           <p className="text-lg text-zinc-300">
             Want the layered diagram + tech-stack detail? It's all in{" "}
             <a
-              href="https://github.com/samwsimpson/Roushi/blob/main/PROJECT_SCOPE.md"
+              href="https://github.com/samwsimpson/roushi-template/blob/main/PROJECT_SCOPE.md"
               className="seal-underline text-zinc-300"
               target="_blank"
               rel="noreferrer noopener"

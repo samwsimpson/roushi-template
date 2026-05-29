@@ -43,7 +43,7 @@ export default function BlogPage() {
               Public changelog →
             </Link>
             <a
-              href="https://github.com/samwsimpson/Roushi/commits/main"
+              href="https://github.com/samwsimpson/roushi-template/commits/main"
               target="_blank"
               rel="noreferrer noopener"
               className="seal-underline text-zinc-300"

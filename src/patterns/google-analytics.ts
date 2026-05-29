@@ -60,20 +60,51 @@ export const pattern: Pattern = {
   },
 
   async detect(project) {
+    // Strongest "GA is firing" signal: the gtag.js script tag points at
+    // googletagmanager.com. If that's loading, GA is tracking — doesn't
+    // matter if the measurement ID is hardcoded, a template var, or set
+    // via env. Most non-canonical setups have this script in the layout.
+    const hasGtagScript = project.grep(
+      "googletagmanager.com/gtag/js",
+      { glob: "*.tsx" },
+    );
+    // Tag Manager loads its own GA — another working setup
+    const hasGoogleTagManager = project.grep("<GoogleTagManager", {
+      glob: "*.tsx",
+    });
+    // The canonical install (what apply() produces)
     const hasPackage = await project.hasDependency(PACKAGE);
-    const hasComponent = project.grep("<GoogleAnalytics", { glob: "*.tsx" });
+    const hasCanonicalComponent = project.grep("<GoogleAnalytics", {
+      glob: "*.tsx",
+    });
     const hasEnvVar = await project.envHas(ENV_VAR);
+    const canonicalApplied = hasPackage && hasCanonicalComponent && hasEnvVar;
 
-    const applied = hasPackage && hasComponent && hasEnvVar;
-    if (applied) return { status: "applied" };
+    if (canonicalApplied) {
+      return { status: "applied", detail: "Canonical @next/third-parties install" };
+    }
+    if (hasGtagScript) {
+      return {
+        status: "applied",
+        detail: "Manual gtag.js script (non-canonical but working)",
+      };
+    }
+    if (hasGoogleTagManager) {
+      return {
+        status: "applied",
+        detail: "Google Tag Manager (non-canonical but working)",
+      };
+    }
 
-    const partial = hasPackage || hasComponent || hasEnvVar;
+    // Partial canonical install — has some pieces of @next/third-parties
+    // but missing others
+    const partial = hasPackage || hasCanonicalComponent || hasEnvVar;
     if (partial) {
       return {
         status: "partial",
         missing: [
           ...(hasPackage ? [] : ["package"]),
-          ...(hasComponent ? [] : ["component"]),
+          ...(hasCanonicalComponent ? [] : ["component"]),
           ...(hasEnvVar ? [] : ["env-var"]),
         ],
       };
@@ -105,6 +136,11 @@ export const pattern: Pattern = {
 
     const wasCleanBefore = project.isGitClean();
 
+    // App root may be a subdir for monorepo shapes (apps/web, frontend/) —
+    // package.json staging needs the real path.
+    const appRoot = await project.findAppRoot();
+    const appRootRel = appRoot === project.cwd ? "" : appRoot.slice(project.cwd.length + 1).replace(/\\/g, "/");
+
     // Step 1: get or create the GA property + data stream
     const ga = await getOrCreateGaProperty({
       accountId,
@@ -120,7 +156,10 @@ export const pattern: Pattern = {
     // Step 2: install the package
     if (!(await project.hasDependency(PACKAGE))) {
       project.installPackage(PACKAGE);
-      filesToStage.push("package.json", "pnpm-lock.yaml");
+      filesToStage.push(
+        appRootRel ? `${appRootRel}/package.json` : "package.json",
+        appRootRel ? `${appRootRel}/pnpm-lock.yaml` : "pnpm-lock.yaml",
+      );
     }
 
     // Step 3: add the component to the root layout

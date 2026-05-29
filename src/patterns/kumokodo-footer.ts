@@ -30,17 +30,40 @@ export const pattern: Pattern = {
   },
 
   async detect(project) {
-    // Look for either phrase in any tracked source file
-    const hasSaas = project.grep(SAAS_LINE);
-    const hasClient = project.grep(CLIENT_LINE);
+    // Three signals, any of which counts as applied:
+    //   1. The canonical SaaS phrase (case-insensitive — Kodokyo spells
+    //      "Application" with a capital A vs. our lowercase)
+    //   2. The canonical client phrase (case-insensitive)
+    //   3. A link to https://kumokodo.ai in any TSX file — catches custom
+    //      footer components like LisAI's where the phrasing differs
+    // Fixed-string + case-insensitive grep (Project.grep defaults)
+    // catches casing variants like "Application" vs "application" automatically
+    const hasSaas = project.grep("KumoKodo.ai SaaS application", {
+      glob: "*.tsx",
+    });
+    const hasClient = project.grep("Built by KumoKodo.ai", { glob: "*.tsx" });
+    const hasKumokodoLink = project.grep("https://kumokodo.ai", {
+      glob: "*.tsx",
+    });
 
-    if (hasSaas || hasClient) {
+    if (hasSaas) {
       return {
         status: "applied",
-        detail: hasSaas
-          ? "SaaS variant footer present"
-          : "Client variant footer present",
-        appliedParams: { variant: hasSaas ? "saas" : "client" },
+        detail: "SaaS variant footer present",
+        appliedParams: { variant: "saas" },
+      };
+    }
+    if (hasClient) {
+      return {
+        status: "applied",
+        detail: "Client variant footer present",
+        appliedParams: { variant: "client" },
+      };
+    }
+    if (hasKumokodoLink) {
+      return {
+        status: "applied",
+        detail: "Custom footer with kumokodo.ai link detected",
       };
     }
 

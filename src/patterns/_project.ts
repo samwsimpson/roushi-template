@@ -118,10 +118,27 @@ export class Project {
     return null;
   }
 
-  /** Returns true if any tracked file contains the pattern */
-  grep(pattern: string, options: { glob?: string } = {}): boolean {
+  /**
+   * Returns true if any tracked file contains the pattern.
+   *
+   * Defaults to fixed-string (-F) matching so patterns can contain regex
+   * metacharacters like `(`, `)`, `.`, `[`, `]` without escaping. Pass
+   * `regex: true` if you actually need regex semantics (and accept that
+   * git grep uses BRE by default, ERE with -E).
+   *
+   * Defaults to case-insensitive (-i) so casing differences in user-written
+   * footer attributions / scripts don't cause false negatives. Pass
+   * `caseSensitive: true` to override.
+   */
+  grep(
+    pattern: string,
+    options: { glob?: string; regex?: boolean; caseSensitive?: boolean } = {},
+  ): boolean {
     try {
-      const args = ["grep", "-l", pattern, "--", options.glob ?? "."];
+      const flags: string[] = ["-l"];
+      if (!options.regex) flags.push("-F"); // fixed-string by default
+      if (!options.caseSensitive) flags.push("-i"); // case-insensitive by default
+      const args = ["grep", ...flags, pattern, "--", options.glob ?? "."];
       const result = execFileSync("git", args, {
         encoding: "utf-8",
         cwd: this.cwd,

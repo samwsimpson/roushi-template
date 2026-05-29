@@ -81,7 +81,7 @@ export default function AboutPage() {
               How it works →
             </Link>
             <a
-              href="https://github.com/samwsimpson/Roushi"
+              href="https://github.com/samwsimpson/roushi-template"
               target="_blank"
               rel="noreferrer noopener"
               className="seal-underline text-zinc-300"
