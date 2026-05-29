@@ -351,6 +351,42 @@ export default function HelpPage() {
         </p>
       </Section>
 
+      <Section id="updating" title="Keeping your instance up to date">
+        <p>
+          Your Roushi deployment is a <strong>fork snapshot</strong> — upstream
+          changes to the template don&apos;t auto-propagate. Three ways to pull
+          updates, in order of effort:
+        </p>
+        <ul className="ml-5 list-disc space-y-2">
+          <li>
+            <strong>Auto-PR workflow (recommended)</strong> — the template ships
+            with <code>.github/workflows/sync-upstream.yml</code> that runs daily
+            and opens a PR when upstream has new commits. <strong>One-time setup:</strong>{" "}
+            on your fork&apos;s repo, click the <strong>Actions</strong> tab and{" "}
+            <strong>&quot;I understand my workflows, go ahead and enable them&quot;</strong>{" "}
+            (GitHub disables Actions on forks by default). After that, you&apos;ll get a
+            PR titled <em>&quot;Sync from upstream (roushi-template)&quot;</em>{" "}
+            whenever upstream ships — review + merge → Vercel redeploys.
+          </li>
+          <li>
+            <strong>GitHub&apos;s &quot;Sync fork&quot; button</strong> — manual
+            one-click sync from the fork repo page. No PR review; changes land
+            directly on main.
+          </li>
+          <li>
+            <strong>CLI</strong>:{" "}
+            <code>git remote add upstream https://github.com/samwsimpson/roushi-template.git</code>{" "}
+            then <code>git fetch upstream && git merge upstream/main && git push origin main</code>.
+          </li>
+        </ul>
+        <p className="text-zinc-400">
+          Future: when Roushi ships as a managed SaaS, updates roll out
+          automatically across all hosted instances and you don&apos;t manage
+          forks at all. Self-hosted stays the path for operators who want to
+          own the stack.
+        </p>
+      </Section>
+
       <Section id="patterns" title="Patterns — portfolio-wide automation">
         <p>
           <Link href="/patterns" className="text-emerald-400 hover:underline">/patterns</Link>{" "}

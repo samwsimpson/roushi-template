@@ -120,7 +120,30 @@ pnpm install
 cp .env.example .env.local  # paste your DATABASE_URL from Vercel
 pnpm roushi ingest ./content`}</Code>
             </Step>
-            <Step n={4} title="Optional: connect your editor">
+            <Step n={4} title="Enable GitHub Actions on your fork (for auto-updates)">
+              <p>
+                Your fork ships with a daily workflow that opens a PR when
+                upstream Roushi has new commits. GitHub disables Actions on
+                forks by default for security — to enable:
+              </p>
+              <ol className="ml-5 list-decimal space-y-1 text-zinc-300">
+                <li>Open your fork&apos;s repo on GitHub</li>
+                <li>Click the <strong>Actions</strong> tab</li>
+                <li>Click <strong>&quot;I understand my workflows, go ahead and enable them&quot;</strong></li>
+              </ol>
+              <p>
+                Once enabled, the &quot;Sync from upstream&quot; workflow runs
+                daily at 12:00 UTC. When it finds new commits, you&apos;ll get
+                a PR titled &quot;Sync from upstream (roushi-template)&quot; —
+                review the diff, click Merge, Vercel redeploys.
+              </p>
+              <p className="text-zinc-400">
+                Don&apos;t want auto-updates? Skip this step. You can pull
+                updates manually any time via GitHub&apos;s &quot;Sync fork&quot;
+                button on your repo page.
+              </p>
+            </Step>
+            <Step n={5} title="Optional: connect your editor">
               <p>
                 Your instance has an MCP endpoint at{" "}
                 <code>https://your-roushi.vercel.app/api/mcp</code>. Set{" "}

@@ -5,7 +5,7 @@ import { SealStamp } from "../components/SealStamp";
 export const metadata = {
   title: "Onboarding — Roushi",
   description:
-    "You deployed Roushi. Now what? Five things to try in your first ten minutes that will make Roushi click.",
+    "You deployed Roushi. Now what? Six things to try in your first ten minutes that will make Roushi click.",
 };
 
 export default function OnboardingPage() {
@@ -24,9 +24,9 @@ export default function OnboardingPage() {
             You&apos;re in. Now what?
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-300">
-            Five things to do right now that will make Roushi click. The whole
-            sequence takes ten minutes. Skip any step that doesn&apos;t apply —
-            they&apos;re independent.
+            Six things to do right now that will make Roushi click. The whole
+            sequence takes about ten minutes. Skip any step that doesn&apos;t
+            apply — they&apos;re independent.
           </p>
         </header>
 
@@ -184,6 +184,34 @@ Catching it at the validation boundary keeps downstream code simple.`}</Code>
 
           <Step
             number="05"
+            time="1 min"
+            title="Enable auto-update workflow on your fork"
+          >
+            <p>
+              Your fork includes a daily GitHub Action that opens a PR when
+              upstream Roushi has new commits. GitHub disables Actions on
+              forks by default — enable in one click:
+            </p>
+            <ol className="ml-5 list-decimal space-y-1 text-zinc-300">
+              <li>Open your fork&apos;s repo on GitHub</li>
+              <li>Click the <strong>Actions</strong> tab</li>
+              <li>Click <strong>&quot;I understand my workflows, go ahead and enable them&quot;</strong></li>
+            </ol>
+            <p>
+              Now you&apos;ll get a PR titled{" "}
+              <em>&quot;Sync from upstream (roushi-template)&quot;</em> whenever
+              there are new commits. Review the diff, click Merge, Vercel
+              redeploys. No more drifting from upstream.
+            </p>
+            <p className="text-zinc-400">
+              Don&apos;t want this? Skip the step. You can pull updates
+              manually any time using GitHub&apos;s &quot;Sync fork&quot;
+              button, or via <code>git pull upstream main</code>.
+            </p>
+          </Step>
+
+          <Step
+            number="06"
             time="3 min"
             title="Connect your editor"
           >
