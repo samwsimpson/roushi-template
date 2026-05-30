@@ -9,7 +9,13 @@ import { routes, type VercelConfig } from "@vercel/config/v1";
 
 export const config: VercelConfig = {
   framework: "nextjs",
-  buildCommand: "pnpm build",
+  // `db:setup` is idempotent (CREATE EXTENSION IF NOT EXISTS, drizzle push
+  // is delta-based, CREATE INDEX IF NOT EXISTS) so safe to run on every
+  // build. First deploy: provisions tables in the freshly-created Neon DB.
+  // Subsequent deploys: no-op-ish (only applies schema deltas).
+  // scripts/run-sql.ts opportunistically loads .env.local for local dev
+  // but uses process.env on Vercel — same script works both contexts.
+  buildCommand: "pnpm db:setup && pnpm build",
   installCommand: "pnpm install --frozen-lockfile",
 
   headers: [

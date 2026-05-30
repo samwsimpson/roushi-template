@@ -4,10 +4,21 @@
 // internal semicolons) and CREATE EXTENSION statements work in one shot.
 //
 // Usage: pnpm tsx scripts/run-sql.ts <path-to-sql-file>
+//
+// Env-loading: opportunistically loads `.env.local` if it exists. Works in
+// both contexts without changes to package.json scripts:
+//   - Local dev: .env.local exists, dotenv loads it
+//   - Vercel build: no .env.local, but Vercel injects env vars into
+//     process.env directly — dotenv is a no-op, process.env has what we need
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { config as loadDotenv } from "dotenv";
 import postgres from "postgres";
+
+if (existsSync(".env.local")) {
+  loadDotenv({ path: ".env.local" });
+}
 
 const sqlPath = process.argv[2];
 if (!sqlPath) {
@@ -18,7 +29,9 @@ if (!sqlPath) {
 function requireDatabaseUrl(): string {
   const v = process.env.DATABASE_URL;
   if (!v) {
-    console.error("DATABASE_URL is required (run with `pnpm tsx --env-file=.env.local`)");
+    console.error(
+      "DATABASE_URL is required. Local dev: ensure .env.local exists with DATABASE_URL set. Vercel build: ensure the Neon Marketplace integration is connected to this project.",
+    );
     process.exit(1);
   }
   return v;

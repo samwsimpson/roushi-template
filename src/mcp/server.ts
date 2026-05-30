@@ -9,7 +9,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { registerAllTools, TOOL_NAMES } from "./tools";
 
 const mcp = new McpServer(
-  { name: "roushi", version: "0.13.2" },
+  { name: "roushi", version: "0.13.3" },
   { capabilities: { tools: {} } },
 );
 registerAllTools(mcp);

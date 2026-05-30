@@ -1,6 +1,6 @@
 {
   "name": "roushi",
-  "version": "0.13.2",
+  "version": "0.13.3",
   "private": false,
   "description": "Self-wiring knowledge layer + autonomous coordination plane for portfolio operators",
   "engines": {
@@ -20,8 +20,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:extensions": "tsx --env-file=.env.local scripts/run-sql.ts drizzle/0000_setup_extensions.sql",
-    "db:indexes": "tsx --env-file=.env.local scripts/run-sql.ts drizzle/post-migration-indexes.sql",
+    "db:extensions": "tsx scripts/run-sql.ts drizzle/0000_setup_extensions.sql",
+    "db:indexes": "tsx scripts/run-sql.ts drizzle/post-migration-indexes.sql",
     "db:setup": "pnpm db:extensions && pnpm db:push && pnpm db:indexes",
     "test": "vitest run",
     "test:watch": "vitest",

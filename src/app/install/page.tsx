@@ -97,28 +97,33 @@ export default function InstallPage() {
                 </li>
               </ul>
             </Step>
-            <Step n={2} title="First deploy + database setup">
+            <Step n={2} title="Visit your instance">
               <p>
-                Wait for the first build to complete (~30 seconds). Then run the
-                database setup once — clone your new repo locally and:
-              </p>
-              <Code>{`cd roushi
-pnpm install
-vercel env pull .env.local   # pulls DATABASE_URL from Vercel
-pnpm db:setup                # creates tables + indexes`}</Code>
-            </Step>
-            <Step n={3} title="Visit your instance">
-              <p>
+                Wait for the first build to complete (~60 seconds — Vercel
+                auto-provisions Neon Postgres and runs <code>db:setup</code> as
+                part of the build, so tables are created automatically). Then
                 Vercel gives you a URL like{" "}
                 <code>roushi-yourname.vercel.app</code>. Open it — the Ask
-                interface is ready. Start ingesting your content:
+                interface is ready. No manual database setup required.
               </p>
-              <Code>{`# Clone your repo locally for CLI access
-git clone https://github.com/YOUR_USER/Roushi
-cd Roushi
+            </Step>
+            <Step n={3} title="Optional: clone locally for CLI access">
+              <p>
+                Want to use the <code>pnpm roushi</code> CLI to ingest projects
+                from your local machine, or work on your own customizations?
+                Clone your fork:
+              </p>
+              <Code>{`git clone https://github.com/YOUR_USER/roushi-template
+cd roushi-template
 pnpm install
-cp .env.example .env.local  # paste your DATABASE_URL from Vercel
-pnpm roushi ingest ./content`}</Code>
+npx vercel link                  # link to your Vercel project
+npx vercel env pull .env.local   # pull DATABASE_URL + other env vars
+pnpm roushi ingest ./content     # ingest the starter content
+pnpm roushi add-project ~/projects/some-project   # ingest your own`}</Code>
+              <p>
+                Skip this if you only want to use the web UI — your deployed
+                instance works without any local setup.
+              </p>
             </Step>
             <Step n={4} title="Enable GitHub Actions on your fork (for auto-updates)">
               <p>
