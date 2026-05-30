@@ -185,15 +185,15 @@ Catching it at the validation boundary keeps downstream code simple.`}</Code>
           <Step
             number="05"
             time="1 min"
-            title="Enable auto-update workflow on your fork"
+            title="Enable auto-update workflow on your repo"
           >
             <p>
-              Your fork includes a daily GitHub Action that opens a PR when
+              Your repo includes a daily GitHub Action that opens a PR when
               upstream Roushi has new commits. GitHub disables Actions on
-              forks by default — enable in one click:
+              new repos by default — enable in one click:
             </p>
             <ol className="ml-5 list-decimal space-y-1 text-zinc-300">
-              <li>Open your fork&apos;s repo on GitHub</li>
+              <li>Open your repo on GitHub</li>
               <li>Click the <strong>Actions</strong> tab</li>
               <li>Click <strong>&quot;I understand my workflows, go ahead and enable them&quot;</strong></li>
             </ol>
@@ -203,10 +203,17 @@ Catching it at the validation boundary keeps downstream code simple.`}</Code>
               there are new commits. Review the diff, click Merge, Vercel
               redeploys. No more drifting from upstream.
             </p>
+            <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3 text-xs text-zinc-400">
+              <strong>Heads up:</strong> Vercel&apos;s deploy flow creates a
+              brand-new independent repo (not a true fork), so GitHub&apos;s
+              UI &quot;Sync fork&quot; button doesn&apos;t appear. The workflow
+              above does the same job — it&apos;s the recommended path.
+            </div>
             <p className="text-zinc-400">
-              Don&apos;t want this? Skip the step. You can pull updates
-              manually any time using GitHub&apos;s &quot;Sync fork&quot;
-              button, or via <code>git pull upstream main</code>.
+              Don&apos;t want auto-updates? Skip this step. You can also pull
+              changes manually any time by opening the GitHub compare URL{" "}
+              <code>github.com/YOUR_USER/YOUR_REPO/compare/main...samwsimpson:roushi-template:main</code>
+              {" "}— creates a PR with the diff for review.
             </p>
           </Step>
 

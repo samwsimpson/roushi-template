@@ -125,14 +125,14 @@ pnpm roushi add-project ~/projects/some-project   # ingest your own`}</Code>
                 instance works without any local setup.
               </p>
             </Step>
-            <Step n={4} title="Enable GitHub Actions on your fork (for auto-updates)">
+            <Step n={4} title="Enable GitHub Actions for auto-updates">
               <p>
-                Your fork ships with a daily workflow that opens a PR when
+                Your repo ships with a daily workflow that opens a PR when
                 upstream Roushi has new commits. GitHub disables Actions on
-                forks by default for security — to enable:
+                new repos by default for security — to enable:
               </p>
               <ol className="ml-5 list-decimal space-y-1 text-zinc-300">
-                <li>Open your fork&apos;s repo on GitHub</li>
+                <li>Open your repo on GitHub</li>
                 <li>Click the <strong>Actions</strong> tab</li>
                 <li>Click <strong>&quot;I understand my workflows, go ahead and enable them&quot;</strong></li>
               </ol>
@@ -142,10 +142,18 @@ pnpm roushi add-project ~/projects/some-project   # ingest your own`}</Code>
                 a PR titled &quot;Sync from upstream (roushi-template)&quot; —
                 review the diff, click Merge, Vercel redeploys.
               </p>
+              <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3 text-xs text-zinc-400">
+                <strong>Why not GitHub&apos;s &quot;Sync fork&quot; button?</strong>{" "}
+                Vercel&apos;s deploy flow creates a brand-new independent
+                repository in your account (not a true fork), so GitHub&apos;s
+                UI sync button doesn&apos;t appear. The workflow above does
+                the same job mechanically — it&apos;s the recommended path.
+              </div>
               <p className="text-zinc-400">
-                Don&apos;t want auto-updates? Skip this step. You can pull
-                updates manually any time via GitHub&apos;s &quot;Sync fork&quot;
-                button on your repo page.
+                Don&apos;t want auto-updates? Skip this step. You can also pull
+                updates manually any time using this GitHub compare URL{" "}
+                <code>github.com/YOUR_USER/YOUR_REPO/compare/main...samwsimpson:roushi-template:main</code>
+                {" "}— opens a PR with the diff for review.
               </p>
             </Step>
             <Step n={5} title="Optional: connect your editor">
