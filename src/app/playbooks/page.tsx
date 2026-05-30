@@ -3,6 +3,11 @@ import { listPlaybooks } from "../../lib/playbooks";
 import { IntroPanel } from "../components/IntroPanel";
 import { Tooltip } from "../components/Tooltip";
 
+// Queries the brain on every load — must be dynamic. Build-time prerendering
+// would crash on a fresh deploy where the entities table doesn't exist yet.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Playbooks — Roushi",
 };

@@ -7,6 +7,12 @@ export const metadata = {
   title: "Examples — Roushi",
 };
 
+// Queries the brain on every load — must be dynamic. Build-time prerendering
+// would crash on a fresh deploy where the entities table doesn't exist yet
+// (chicken-and-egg with `pnpm db:setup` running post-deploy).
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 // Each example is either a search query (renders top hits) or a graph walk
 // from a starting slug (renders connected entities by relation).
 interface SearchExample {

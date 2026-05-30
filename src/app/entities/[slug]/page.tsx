@@ -6,6 +6,11 @@ import { RemoveEntityForm } from "../../components/RemoveEntityForm";
 import { Tooltip } from "../../components/Tooltip";
 import { getEdgesForEntity, getEntityBySlug } from "../../lib/queries";
 
+// Queries the brain on every load — must be dynamic. Build-time prerendering
+// would crash on a fresh deploy where the entities table doesn't exist yet.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ slug: string }>;
 }

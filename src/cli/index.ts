@@ -86,7 +86,7 @@ const program = new Command();
 program
   .name("roushi")
   .description("Roushi — ask the master")
-  .version("0.13.1");
+  .version("0.13.2");
 
 program
   .command("think <query>")
