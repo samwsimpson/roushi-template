@@ -62,30 +62,30 @@ export function MarketingHomepage() {
         {/* ─── 02 · The seven-second pitch ────────────────────────────── */}
         <Chapter num="02" eyebrow="What it does, in seven seconds">
           <p className="text-zinc-300">
-            You edit <MonoInline>app/api/route.ts</MonoInline> in Claude Code. Before the file
-            lands, Roushi quietly tells the model what you decided about Auth.js v5 last quarter,
-            which Drizzle gotcha bit you in March, and which security rules apply to API routes
-            in this product. The code lands secure and consistent on the first try.
+            You edit a file in your editor. Before the change lands, Roushi quietly tells
+            your AI assistant what you decided about that subject months ago, which gotcha
+            bit you in a related project, and which rules apply to this kind of code. The
+            file lands consistent with the rest of your portfolio on the first try.
           </p>
           <MonoCode>
-            <span className="text-zinc-500"># PreToolUse hook fires before Claude writes the file</span>
+            <span className="text-zinc-500"># PreToolUse hook fires before the AI writes the file</span>
             {"\n"}
             <span className="text-emerald-400">📚 Roushi context</span>{" "}
             <span className="text-zinc-400">·</span>{" "}
-            <strong className="text-zinc-100">Kodokyo</strong>{" "}
+            <strong className="text-zinc-100">your-product</strong>{" "}
             <span className="text-zinc-400">·</span>{" "}
-            <span className="text-zinc-300">Next.js API route</span>
+            <span className="text-zinc-300">API route</span>
             {"\n\n"}
             <span className="text-zinc-400">Relevant from the brain:</span>
             {"\n"}
             <span className="text-zinc-500">- [lesson]</span>{" "}
-            <span className="text-zinc-200">Drizzle ANY(jsArray) spreads to N params</span>
+            <span className="text-zinc-200">an ORM gotcha you hit two months ago</span>
             {"\n"}
             <span className="text-zinc-500">- [decision]</span>{" "}
-            <span className="text-zinc-200">Auth.js v5 JWT, not DB sessions (D9)</span>
+            <span className="text-zinc-200">a stack choice you locked in last quarter</span>
             {"\n"}
             <span className="text-zinc-500">- [rule]</span>{" "}
-            <span className="text-zinc-200">portfolio-security-baseline (always-on)</span>
+            <span className="text-zinc-200">a portfolio-wide convention (always-on)</span>
           </MonoCode>
         </Chapter>
 
@@ -97,7 +97,7 @@ export function MarketingHomepage() {
             <Tablet
               heading="Ask"
               body="Grounded synthesis with citations. The brain returns an answer, the entities it stood on, and the gaps it can't fill yet."
-              code={`> "what gotchas have we hit with Inngest?"\n\n[kodori-inngest-step-output-cap]\n[kodori-inngest-sync-gotcha]\nGaps: rate-limit retries.`}
+              code={`> "what gotchas have we hit with our ORM?"\n\n[orm-any-array-spread]\n[orm-strict-non-tty]\nGaps: retry policy patterns.`}
             />
             <Tablet
               heading="Track"

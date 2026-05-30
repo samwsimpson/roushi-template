@@ -27,12 +27,15 @@ const TYPE_COLORS: Record<string, string> = {
   rule: "text-fuchsia-400 border-fuchsia-900/60 bg-fuchsia-950/40",
 };
 
+// Generic example queries — work for any operator's brain, no portfolio-specific
+// references. Each deployer's Roushi instance shows the same starter prompts;
+// they get more useful the more content the operator ingests.
 const SUGGESTED_QUERIES = [
-  "what gotchas have we hit with Inngest",
-  "which products use Auth.js v5",
-  "trusted publishing",
-  "auth.js v5 edge runtime",
-  "what's the shipment sweep for Kodori",
+  "what tech do my projects use the most",
+  "what decisions have I made about authentication",
+  "what lessons have I learned about deployments",
+  "which projects share architectural patterns",
+  "what's pending across all my active goals",
 ];
 
 export default async function HomePage({ searchParams }: PageProps) {
@@ -41,11 +44,17 @@ export default async function HomePage({ searchParams }: PageProps) {
   const mode = params.mode === "search" ? "search" : "ask";
   const forceMarketing = params.view === "marketing";
 
-  // Signed-out visitors get the marketing homepage; signed-in operators
-  // land on the Ask interface — unless they explicitly opt into the
-  // marketing view via `?view=marketing` (e.g. via the "Public site"
-  // link in the app nav). The proxy lets `/` through unauthenticated
-  // so the marketing branch can actually run.
+  // The marketing pitch is for the canonical roushi.ai instance only —
+  // it describes Roushi-the-product and is signed by the operator who
+  // built it. Self-hosted deployments shouldn't host the canonical pitch,
+  // they should land users directly on the Ask interface for their own
+  // brain. Gate via env var: set NEXT_PUBLIC_IS_CANONICAL_ROUSHI=true on
+  // the canonical instance only.
+  const isCanonicalInstance = process.env.NEXT_PUBLIC_IS_CANONICAL_ROUSHI === "true";
+
+  // On the canonical instance: signed-out visitors see the pitch, signed-in
+  // operators land on Ask. On self-hosted instances: everyone goes straight
+  // to Ask (no canonical pitch).
   let session: Session | null = null;
   if (authEnabled) {
     try {
@@ -54,7 +63,7 @@ export default async function HomePage({ searchParams }: PageProps) {
       console.error("[page] auth() failed:", err);
     }
   }
-  if ((authEnabled && !session && !q) || forceMarketing) {
+  if (isCanonicalInstance && ((authEnabled && !session && !q) || forceMarketing)) {
     return <MarketingHomepage />;
   }
 
