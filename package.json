@@ -3,6 +3,7 @@
   "version": "0.13.5",
   "private": false,
   "description": "Self-wiring knowledge layer + autonomous coordination plane for portfolio operators",
+  "license": "MIT",
   "engines": {
     "node": ">=24.0.0",
     "pnpm": ">=9.0.0"
